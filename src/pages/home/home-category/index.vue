@@ -1,11 +1,9 @@
 <template>
-	<view class="content">
-	</view>
+  <view class="content">分类</view>
 </template>
 
 <script>
 </script>
 
 <style lang='scss'>
-
 </style>

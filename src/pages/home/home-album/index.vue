@@ -1,5 +1,5 @@
 <template>
-  <view class="content">横屏</view>
+  <view class="content">专辑</view>
 </template>
 
 <script>
