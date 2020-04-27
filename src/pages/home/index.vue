@@ -1,5 +1,6 @@
 <template>
-	<view class="content">
+	<view class="home">
+        首页
 	</view>
 </template>
 
