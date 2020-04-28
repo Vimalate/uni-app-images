@@ -1,5 +1,5 @@
 <template>
-  <view class="content" v-if="recommends.length>0">
+  <scroll-view @scrolltolower="handleTolower" scroll-y class="content" v-if="recommends.length>0">
     <!-- 推荐 -->
     <view class="recommend_wrap">
       <view class="recommend_item" v-for="(item) in recommends" :key="item.id">
@@ -24,7 +24,18 @@
         </view>
       </view>
     </view>
-  </view>
+    <!-- 热门 -->
+    <view class="hots_wrap">
+      <view class="hots_title">
+        <text>热门</text>
+      </view>
+      <view class="hots_content">
+        <view class="hots_item" v-for="(item) in hots" :key="item.id">
+          <img mode="widthFix" :src="item.thumb" alt />
+        </view>
+      </view>
+    </view>
+  </scroll-view>
 </template>
 
 <script>
@@ -34,7 +45,16 @@ export default {
     return {
       // 推荐
       recommends: [],
-      monthes: []
+      monthes: [],
+      hots: [],
+      // 请求参数
+      params: {
+        limit: 30,
+        order: "hot",
+        skip: 0
+      },
+      // 是否还有下一页
+      hasMore: true
     };
   },
   mounted() {
@@ -44,26 +64,52 @@ export default {
     getList() {
       this.request({
         url: "http://service.picasso.adesk.com/v3/homepage/vertical",
-        data: {
-          limit: 30,
-          order: "hot",
-          skip: 0
-        }
+        data: this.params
       }).then(res => {
         console.log(res);
-        // 推荐
-        this.recommends = res.res.homepage[1].items;
-        // 月份
-        this.monthes = res.res.homepage[2];
-        this.monthes.MM = moment(this.monthes.stime).format("MM");
-        this.monthes.DD = moment(this.monthes.stime).format("DD");
+        // 判断是否还有下一页数据
+        if(res.res.vertical.length===0){
+          this.hasMore=false
+          return 
+        }
+        // 第一次发请求
+        if (this.recommends.length === 0) {
+          // 推荐
+          this.recommends = res.res.homepage[1].items;
+          // 月份
+          this.monthes = res.res.homepage[2];
+          this.monthes.MM = moment(this.monthes.stime).format("MM");
+          this.monthes.DD = moment(this.monthes.stime).format("DD");
+        }
+
+        // 热门
+        // 数组拼接
+        this.hots = [...this.hots, ...res.res.vertical];
       });
+    },
+    // 滚动条触底事件
+    handleTolower() {
+      console.log("ok");
+      if (this.hasMore) {
+this.params.skip += this.params.limit;
+      this.getList();
+      }else{
+        uni.showToast({
+          title: '没有更多了',
+          icon:'none',
+          duration: 2000
+        });
+      }
+      
     }
   }
 };
 </script>
 
 <style lang='scss'>
+.content {
+  height: calc(100vh - 36px);
+}
 .recommend_wrap {
   display: flex;
   flex-wrap: wrap;
@@ -109,6 +155,28 @@ export default {
     .month_item {
       width: 33.333%;
       border: 3rpx solid #fff;
+    }
+  }
+}
+.hots_wrap {
+  .hots_title {
+    padding: 20rpx;
+    text {
+      padding: 20rpx;
+      border-left: 20rpx solid $color;
+      font-size: 34rpx;
+      font-weight: 600;
+    }
+  }
+
+  .hots_content {
+    display: flex;
+    flex-wrap: wrap;
+    .hots_item {
+      width: 33.333%;
+      border: 3rpx solid #fff;
+      image {
+      }
     }
   }
 }
