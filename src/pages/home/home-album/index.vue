@@ -10,7 +10,7 @@
     </view>
     <!-- 专辑 -->
     <view class="ablum_list">
-      <navigator url="/pages/album/index" class="ablum_item" v-for="item in album" :key="item.id">
+      <navigator :url="`/pages/album/index?id=${item.id}`" class="ablum_item" v-for="item in album" :key="item.id">
         <view class="ablum_img">
           <image mode="aspectFill" :src="item.cover" alt />
         </view>
@@ -52,7 +52,6 @@ export default {
         url: "https://service.picasso.adesk.com/v1/wallpaper/album",
         data: this.params
       }).then(result => {
-        console.log(result);
         if (this.banner.length === 0) {
           this.banner = result.res.banner;
         }
