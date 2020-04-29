@@ -93,8 +93,7 @@ export default {
 .content {
   .album_bg {
     position: relative;
-    image {
-    }
+    
 
     .album_info {
       position: absolute;
@@ -137,8 +136,6 @@ export default {
       }
     }
 
-    .aalbum_desc {
-    }
   }
   .album_list {
     display: flex;
@@ -146,8 +143,6 @@ export default {
     .album_item {
       width: 33.33%;
       border: 3rpx solid #fff;
-      image {
-      }
     }
   }
 }
