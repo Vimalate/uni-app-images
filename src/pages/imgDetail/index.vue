@@ -13,7 +13,9 @@
     </view>
     <!-- 高清大图 -->
     <view class="lg_img">
-      <image :src="imgDetail.thumb" mode="widthFix" />
+      <swiper-action @swiperAction="handleSwiperAction">
+        <image :src="imgDetail.thumb" mode="widthFix" />
+      </swiper-action>
     </view>
     <!-- 点赞 -->
     <view class="user_rank">
@@ -50,7 +52,7 @@
         <view class="comment_item" v-for="(item) in hot" :key="item.id">
           <view class="comment_user">
             <view class="comment_icon">
-              <image  :src="item.user.avatar" mode="widthFix" />
+              <image :src="item.user.avatar" mode="widthFix" />
             </view>
             <view class="comment_name">
               <view class="user_name">{{item.user.name}}</view>
@@ -70,8 +72,8 @@
         </view>
       </view>
     </view>
-		<!-- 最新评论 -->
-		<view class="comment" v-if="comment.length">
+    <!-- 最新评论 -->
+    <view class="comment" v-if="comment.length">
       <view class="comment_title">
         <text class="iconfont iconpinglun"></text>
         <text class="comment_text">最新评论</text>
@@ -80,7 +82,7 @@
         <view class="comment_item" v-for="(item) in comment" :key="item.id">
           <view class="comment_user">
             <view class="comment_icon">
-              <image  :src="item.user.avatar" mode="widthFix" />
+              <image :src="item.user.avatar" mode="widthFix" />
             </view>
             <view class="comment_name">
               <view class="user_name">{{item.user.name}}</view>
@@ -100,20 +102,30 @@
         </view>
       </view>
     </view>
+    <!-- 下载 -->
+    <view class="download">
+      <view class="download_btn" @click="download">下载图片</view>
+    </view>
   </view>
 </template>
 
 <script>
 import moment, { months } from "moment";
 moment.locale("zh-cn");
+import swiperAction from "@/components/swiperAction";
 export default {
   data() {
     return {
       imgDetail: {},
       album: [],
       hot: [],
-      comment: []
+      comment: [],
+      // 图片索引
+      imgIndex: 0
     };
+  },
+  components: {
+    swiperAction
   },
   mounted() {
     uni.setNavigationBarTitle({
@@ -122,27 +134,72 @@ export default {
   },
   onLoad() {
     console.log(getApp().globalData);
-    const { imgList, imgIndex } = getApp().globalData;
-    this.imgDetail = imgList[imgIndex];
-    // this.newThumb =
-    //   this.imgDetail.thumb + this.imgDetail.rule.replace("$<Height>", 360);
-    // 时间
-    this.imgDetail.cnTime = moment(this.imgDetail.atime * 1000).fromNow();
-    // 获取图片详情id
-    this.getDetail(this.imgDetail.id);
+    const { imgIndex } = getApp().globalData;
+    this.imgIndex = imgIndex;
+    this.getData();
   },
   methods: {
     getDetail(id) {
       this.request({
         url: `https://service.picasso.adesk.com/v2/wallpaper/wallpaper/${id}/comment`
       }).then(result => {
-				console.log(result.res);
-				// 添加时间属性
-				result.res.hot.forEach(v=>v.cnTime=moment(v.atime*1000).fromNow())
-				result.res.comment.forEach(v=>v.cnTime=moment(v.atime*1000).fromNow())
+        console.log(result.res);
+        // 添加时间属性
+        result.res.hot.forEach(
+          v => (v.cnTime = moment(v.atime * 1000).fromNow())
+        );
+        result.res.comment.forEach(
+          v => (v.cnTime = moment(v.atime * 1000).fromNow())
+        );
         this.album = result.res.album;
         this.hot = result.res.hot;
         this.comment = result.res.comment;
+      });
+    },
+    getData() {
+      const { imgList } = getApp().globalData;
+      this.imgDetail = imgList[this.imgIndex];
+      // 时间
+      this.imgDetail.cnTime = moment(this.imgDetail.atime * 1000).fromNow();
+      // 获取图片详情id
+      this.getDetail(this.imgDetail.id);
+    },
+    handleSwiperAction(e) {
+      const { imgList } = getApp().globalData;
+      // 滑动事件
+      if (e.direction === "left" && this.imgIndex < imgList.length) {
+        this.imgIndex++;
+        this.getData();
+      } else if (e.direction === "right" && this.imgIndex > 0) {
+        // 右滑
+        this.imgIndex--;
+        this.getData();
+      } else {
+        uni.showToast({
+          title: "没有数据了",
+          icon: "none",
+          duration: 2000
+        });
+      }
+    },
+    async download() {
+      await uni.showLoading({
+        title: "下载中"
+      });
+      // 远程文件下载到小程序内存中
+      const res1 = await uni.downloadFile({
+        url: this.imgDetail.img //仅为示例，并非真实的资源
+      });
+      const { tempFilePath } = res1[1];
+      // 文件保存至本地
+      const res2 = await uni.saveImageToPhotosAlbum({
+        filePath: tempFilePath
+      });
+      // 提示下载成功
+      uni.hideLoading();
+      await uni.showToast({
+        title: '下载成功',
+        duration: 2000
       });
     }
   }
@@ -152,14 +209,14 @@ export default {
 <style lang='scss' scoped>
 .content {
   .user_info {
-		height: 120rpx;
+    height: 120rpx;
     display: flex;
     padding: 20rpx;
     .user_icon {
       padding: 0 15rpx;
       image {
         width: 88rpx;
-				height: 88rpx;
+        height: 88rpx;
         border-radius: 50%;
       }
     }
@@ -261,56 +318,57 @@ export default {
 
     .comment_list {
       .comment_item {
-				border-bottom: 10rpx solid #eee;
+        border-bottom: 10rpx solid #eee;
         .comment_user {
-					display: flex;
-					padding: 20rpx 0;
+          display: flex;
+          padding: 20rpx 0;
           .comment_icon {
-						width: 15%;
-						display: flex;
-						justify-content: center;
-						align-items: center;
+            width: 15%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             image {
-							width: 90%;
+              width: 90%;
             }
           }
 
           .comment_name {
-						flex: 1;
-						margin-left: 15rpx;
+            flex: 1;
+            margin-left: 15rpx;
             .user_name {
-							color: #777;
+              color: #777;
             }
 
             .user_time {
-							color: #ccc;
-							font-size: 24rpx;
-							padding: 5rpx;
+              color: #ccc;
+              font-size: 24rpx;
+              padding: 5rpx;
             }
           }
 
           .user_badge {
-						margin-right: 20rpx;
+            margin-right: 20rpx;
             image {
-							width: 40rpx;
-							height: 40rpx;
+              width: 40rpx;
+              height: 40rpx;
+              display: inline-block;
             }
           }
         }
 
         .comment_desc {
-					display: flex;
-					padding: 30rpx 0;
+          display: flex;
+          padding: 30rpx 0;
           .comment_content {
-						flex: 1;
-						padding-left: 18%;
-						color: black;
+            flex: 1;
+            padding-left: 18%;
+            color: black;
           }
 
           .comment_like {
-						text-align: right;
+            text-align: right;
             .icondianzan {
-							margin-right: 20rpx;
+              margin-right: 20rpx;
             }
           }
         }
@@ -318,10 +376,27 @@ export default {
     }
   }
 }
-.iconpinglun{
-	color: aqua!important;
+.iconpinglun {
+  color: aqua !important;
 }
-.lg_img{
-	border-bottom: 1rpx solid #eee;
+.lg_img {
+  border-bottom: 1rpx solid #eee;
+}
+.download {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 120rpx;
+  .download_btn {
+    width: 90%;
+    height: 80%;
+    background-color: $color;
+    color: floralwhite;
+    font-size: 50rpx;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 </style>

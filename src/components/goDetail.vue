@@ -15,6 +15,7 @@ export default {
         // 缓存数据全局
         getApp().globalData.imgList=this.list
         getApp().globalData.imgIndex=this.index
+        console.log(this.index)
         // 实现跳转
         uni.navigateTo({
              url: '/pages/imgDetail/index'
