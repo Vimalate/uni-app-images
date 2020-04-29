@@ -2,9 +2,9 @@
   <scroll-view @scrolltolower="handleTolower" scroll-y class="content" v-if="recommends.length>0">
     <!-- 推荐 -->
     <view class="recommend_wrap">
-      <view class="recommend_item" v-for="(item) in recommends" :key="item.id">
+      <navigator :url="`/pages/album/index?id=${item.target}`" class="recommend_item" v-for="(item) in recommends" :key="item.id">
         <img :src="item.thumb" mode="widthFix" alt />
-      </view>
+      </navigator>
     </view>
     <!-- 日期 -->
     <view class="month_wrap">
@@ -69,7 +69,12 @@ export default {
         console.log(res);
         // 判断是否还有下一页数据
         if(res.res.vertical.length===0){
-          this.hasMore=false
+          this.hasMore=
+          uni.showToast({
+            title: '没有更多了',
+            icon:'none',
+            duration: 2000
+          });
           return 
         }
         // 第一次发请求

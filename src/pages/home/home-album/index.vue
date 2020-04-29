@@ -57,6 +57,11 @@ export default {
         }
         if (result.res.album.length === 0) {
           this.hasMore = false;
+          uni.showToast({
+            title: '没有更多了',
+            icon:'none',
+            duration: 2000
+          });
           return;
         }
         this.album = [...this.album, ...result.res.album];
