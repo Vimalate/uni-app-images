@@ -2,7 +2,12 @@
   <scroll-view @scrolltolower="handleTolower" scroll-y class="content" v-if="recommends.length>0">
     <!-- 推荐 -->
     <view class="recommend_wrap">
-      <navigator :url="`/pages/album/index?id=${item.target}`" class="recommend_item" v-for="(item) in recommends" :key="item.id">
+      <navigator
+        :url="`/pages/album/index?id=${item.target}`"
+        class="recommend_item"
+        v-for="(item) in recommends"
+        :key="item.id"
+      >
         <img :src="item.thumb" mode="widthFix" alt />
       </navigator>
     </view>
@@ -19,8 +24,10 @@
         <view class="month_title_more">更多 ></view>
       </view>
       <view class="month_content">
-        <view class="month_item" v-for="(item) in monthes.items" :key="item.id">
-          <img mode="aspectFill" :src="item.thumb+item.rule.replace('$<Height>',360)" alt />
+        <view class="month_item" v-for="(item,index) in monthes.items" :key="item.id">
+          <go-detail :list='monthes.items' :index='index'>
+          <image mode="aspectFill" :src="item.thumb+item.rule.replace('$<Height>',360)" alt />
+            </go-detail>
         </view>
       </view>
     </view>
@@ -30,8 +37,10 @@
         <text>热门</text>
       </view>
       <view class="hots_content">
-        <view class="hots_item" v-for="(item) in hots" :key="item.id">
-          <img mode="widthFix" :src="item.thumb" alt />
+        <view class="hots_item" v-for="(item,index) in hots" :key="item.id">
+          <go-detail :list='hots' :index='index'>
+          <image mode="widthFix" :src="item.thumb" alt />
+          </go-detail>
         </view>
       </view>
     </view>
@@ -40,6 +49,7 @@
 
 <script>
 import moment from "moment";
+import goDetail from "@/components/goDetail";
 export default {
   data() {
     return {
@@ -57,6 +67,9 @@ export default {
       hasMore: true
     };
   },
+  components: {
+    goDetail
+  },
   mounted() {
     this.getList();
   },
@@ -68,14 +81,13 @@ export default {
       }).then(res => {
         console.log(res);
         // 判断是否还有下一页数据
-        if(res.res.vertical.length===0){
-          this.hasMore=
-          uni.showToast({
-            title: '没有更多了',
-            icon:'none',
+        if (res.res.vertical.length === 0) {
+          this.hasMore = uni.showToast({
+            title: "没有更多了",
+            icon: "none",
             duration: 2000
           });
-          return 
+          return;
         }
         // 第一次发请求
         if (this.recommends.length === 0) {
@@ -96,16 +108,15 @@ export default {
     handleTolower() {
       console.log("ok");
       if (this.hasMore) {
-this.params.skip += this.params.limit;
-      this.getList();
-      }else{
+        this.params.skip += this.params.limit;
+        this.getList();
+      } else {
         uni.showToast({
-          title: '没有更多了',
-          icon:'none',
+          title: "没有更多了",
+          icon: "none",
           duration: 2000
         });
       }
-      
     }
   }
 };

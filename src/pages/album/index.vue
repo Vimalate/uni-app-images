@@ -18,16 +18,22 @@
       </view>
     </view>
     <!-- 专辑列表 -->
-    <view class="album_list" >
-      <view class="album_item" v-for="(item) in wallpaper" :key="item.id">
-        <image :src="item.thumb+item.rule.replace('$<Height>',360)" mode="widthFix" />
+    <view class="album_list">
+      <view class="album_item" v-for="(item,index) in wallpaper" :key="item.id">
+        <go-detail :list='wallpaper' :index='index'>
+          <image :src="item.thumb+item.rule.replace('$<Height>',360)" mode="widthFix" />
+        </go-detail>
       </view>
     </view>
   </view>
 </template>
 
 <script>
+import goDetail from "@/components/goDetail";
 export default {
+  components: {
+    goDetail
+  },
   data() {
     return {
       params: {
