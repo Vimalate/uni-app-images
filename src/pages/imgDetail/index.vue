@@ -3,7 +3,7 @@
     <!-- 用户信息 -->
     <view class="user_info">
       <view class="user_icon">
-        <image :src="imgDetail.user.avatar||imgDetail.thumb" mode="widthFix" />
+        <image :src="imgDetail.user.avatar||imgDetail.thumb" mode="aspectFill" />
       </view>
       <view class="user_desc">
         <view class="user_name" v-if="imgDetail.user">{{imgDetail.user.name}}</view>
